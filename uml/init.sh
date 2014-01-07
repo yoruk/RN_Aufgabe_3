@@ -72,6 +72,18 @@ case $name in
     # ssh von r7 auf r3 erlauben
     iptables -A FORWARD -p tcp -s r7_0 -d r3_0 --dport 22 -j ACCEPT
     iptables -A FORWARD -p tcp -s r3_0 -d r7_0 --sport 22 -j ACCEPT
+
+    # stateful firewall - bereits bestehende verbindungen erlauben
+    iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+    #stateful firewall- erstes http-paket erlauben
+    iptables -A FORWARD -m state --state NEW -p tcp --dport 80 --syn -d r3_0 -j ACCEPT
+
+    #stateful firewall- erstes ftp-paket erlauben (DATA)
+    iptables -A FORWARD -m state --state NEW -p tcp --dport 20 --syn -d r3_0 -j ACCEPT
+
+    #stateful firewall- erstes ftp-paket erlauben  (CONTROL)
+    iptables -A FORWARD -m state --state NEW -p tcp --dport 21 --syn -d r3_0 -j ACCEPT
   
   ;;
   r3)
@@ -82,6 +94,7 @@ case $name in
     # Loesche alle vorhandenen Firewall-Eintraege
     iptables -F
     # hier die iptables-Befehle eintragen:
+
    
   ;;
   r4)
@@ -105,6 +118,19 @@ case $name in
     iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
     iptables -A FORWARD -p icmp --icmp-type echo-request -j ACCEPT
     iptables -A FORWARD -p icmp --icmp-type echo-reply -j ACCEPT
+
+    # stateful firewall - bereits bestehende verbindungen erlauben
+    iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+    #stateful firewall- erstes http-paket erlauben
+    iptables -A FORWARD -m state --state NEW -p tcp --dport 80 --syn -d r3_0 -j ACCEPT
+
+    #stateful firewall- erstes ftp-paket erlauben  (DATA) 
+    iptables -A FORWARD -m state --state NEW -p tcp --dport 20 --syn -d r3_0 -j ACCEPT
+
+    #stateful firewall- erstes ftp-paket erlauben  (CONTROL)
+    iptables -A FORWARD -m state --state NEW -p tcp --dport 21 --syn -d r3_0 -j ACCEPT
+
 
   ;;
   r5)
@@ -147,6 +173,21 @@ case $name in
     iptables -A FORWARD -p tcp -s r7_0 -d r3_0 --dport 22 -j ACCEPT
     iptables -A FORWARD -p tcp -s r3_0 -d r7_0 --sport 22 -j ACCEPT
 
+    # stateful firewall - bereits bestehende verbindungen erlauben
+    iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+    #stateful firewall- erstes http-paket erlauben
+    iptables -A FORWARD -m state --state NEW -p tcp --dport 80 --syn -d r3_0 -j ACCEPT
+
+    #stateful firewall- erstes ftp-paket erlauben  (DATA)
+    iptables -A FORWARD -m state --state NEW -p tcp --dport 20 --syn -d r3_0 -j ACCEPT
+
+    #stateful firewall- erstes ftp-paket erlauben  (CONTROL)
+    iptables -A FORWARD -m state --state NEW -p tcp --dport 21 --syn -d r3_0 -j ACCEPT
+
+    #Network Adress Translation (NAT)
+    iptables -t nat -A POSTROUTING -s 172.16.14.0/24 -o eth0 -j MASQUERADE
+  
   ;;
   r7)
     ifconfig eth0 172.16.14.2/24 up
